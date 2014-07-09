@@ -447,7 +447,7 @@ function defineNewResponse(responseType) {
 function observePropertyChange(property, callback) {
   var val = this[property];
 
-  if(Object.getOwnPropertyDescriptor(this, property).configurable) {
+  try {
     Object.defineProperty(this, property, {
       get: function() {
         return val;
@@ -459,8 +459,11 @@ function observePropertyChange(property, callback) {
         return val;
       },
 
-      configurable: true
+      configurable: true,
+      writable: true
     });
+  } catch (e) {
+    return false;
   }
 }
 

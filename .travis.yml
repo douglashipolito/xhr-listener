@@ -1,11 +1,13 @@
 language: node_js
 node_js:
-  - "0.10"
-env:
-  global:
-  - SAUCE_USERNAME: douglashipolito
-  - secure: e+4y7ABujyG/ojYqTOv46oe20pLsPaZ5nuy36Lr53Q51kiELhIBe8VTDcZvYaL6IzC1tWOQ6c4drTpPDxYT8/10Jdn4+gtSTSMMBAwY+GTkUH/tYZZZCR8yDg2iQu5i3gRAdJWLQZiTheIu99XNbj9yMgvqg+X1c21jVSWZ+Fdg=
-  - secure: Ra6z8HWzWYv/rW8hAfEEq144njY7vagP+6hjoGwgRz+xYkN3Kv4ZcHvM2RVOtXV7ofbZt/ZZU2jx1pUmS8gqk2rTnLq01A//P8mxrFDRDZk8MiIXkXAht1WfWUiyGIeHF3HvHiZ9ZqxXSVkouKdgb6t+479LdX0ydsnHMw7dOd4=
+- '0.11'
+- '0.10'
+before_script: npm install -g karma-cli
 notifications:
   email: false
-before_script: npm install -g karma-cli
+env:
+  global:
+  - secure: kGnPWGFJmnplSNF72XIKLjwmRYJoGVpySejSsUH+HJhCf9CklKmVCYRyD/Xfzibpqxo6Q3DBxmXrsYyiystZ3r+IHAnYKCwosQmPZwqllbIFfV6u/P8o1ghGCiSre9vh5d8rCZocqdYeYXUdKc58Oz8WEjbjGk07mKZxhT9LMmQ=
+  - secure: dMe9uPPoNEIBTF+JDHrDGdsTaHJIzoxeNKgGMUSzE+HxJe+Yjsa8oGPHTbEkDf7v6PGuU2fDxFPNAWlEx1XgbJdcu4z5uDMUME1KR1g/NwEVXZ2dSnHakhHEQAcwN1EmKBPLq/ZFQS41aNMSMYUZUUHt1GF3tjksbX6VZ/V67lw=
+addons:
+  sauce_connect: true

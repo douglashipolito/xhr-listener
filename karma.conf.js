@@ -28,6 +28,12 @@ module.exports = function(config) {
       }
     ],
 
+    runnerPort: 9876,
+    browsers: ['PhantomJS', 'Chrome', 'Firefox'],
+    reporters: ['dots'],
+
+    colors: true,
+
     singleRun: false
   });
 

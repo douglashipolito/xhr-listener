@@ -31,19 +31,13 @@ module.exports = function(grunt) {
     },
 
     karma: {
-      options: {
-        configFile: 'karma.conf.js',
-        runnerPort: 9876,
-        browsers: ['PhantomJS'],
-        reporters: ['mocha']
-      },
-
       continuous: {
+        configFile: 'karma.config-ci.js',
         singleRun: true
       },
 
       unit: {
-        browsers: ['PhantomJS', 'Chrome']
+        configFile: 'karma.conf.js',
       }
     },
 
@@ -68,6 +62,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-karma');
 
   grunt.registerTask('test', ['jshint', 'karma:unit']);
-  grunt.registerTask('default', ['concat', 'jshint', 'karma:continuous', 'uglify']);
+  grunt.registerTask('test-ci', ['jshint', 'karma:continuous']);
+  grunt.registerTask('default', ['concat', 'jshint', 'karma:unit', 'uglify']);
 
 };
