@@ -1,0 +1,24 @@
+{
+  "name": "xhr-listener",
+  "version": "0.0.0",
+  "main": "dist/xhr-listener.min.js",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "authors": [
+    "Douglas Hipolito <=>"
+  ],
+  "keywords": [
+    "Ajax",
+    "XHR",
+    "XHR-Hijack"
+  ],
+  "license": "MIT",
+  "homepage": "http://github.com/douglashipolito/xhr-listener",
+  "private": true,
+  "dependencies": {}
+}

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>xhr-listener demo</title>
+    <link rel="stylesheet" href="./assets/normalize.css" />
+    <link rel="stylesheet" href="./assets/main.css" />
+    <style>
+      /* begin demo embedded styles */
+
+      /* end demo embedded styles */
+    </style>
+  </head>
+  <body>
+    <h1>xhr-listener demo</h1>
+
+    <!-- begin demo markup -->
+
+    <!-- end demo markup -->
+
+    <p>See the <a href="http://douglashipolito.github.io/xhr-listener">project homepage</a>.
+    <p>Check out the <a href="https://github.com/douglashipolito/xhr-listener">project repo</a>.
+    <p>Copyright 2014 Douglas Hipolito</p>
+
+    <script src="./../dist/xhr-listener.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+
+    <script>
+      /* begin demo script */
+
+      var listener = XhrListener(/test\.json/);
+
+      listener.done(function () {
+        var json = {};
+
+        console.log(1);
+
+        if(this.is.json) {
+          json = JSON.parse(this.responseText);
+        }
+
+        json.test = 2;
+        this.newResponseText = JSON.stringify(json);
+      });
+
+      function makeXHRRequest(method, file, callback) {
+        method = method || 'get';
+
+        function reqListener () {
+          if(this.readyState === 4 && callback) {
+            callback.call(this, arguments);
+          }
+        }
+
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = reqListener;
+        xhr.open(method, 'data/' + file, true);
+        xhr.send();
+      }
+
+      /*$.ajax({
+        url: "data/test.json",
+      }).done(function(data) {
+        console.log(data.test);
+      });*/
+
+      makeXHRRequest('get', 'test.json', function () {
+        console.log('test');
+      });
+
+      /* end demo script */
+    </script>
+  </body>
+</html>

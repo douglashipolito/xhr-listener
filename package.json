@@ -1,0 +1,29 @@
+{
+  "name": "xhr-listener",
+  "version": "0.0.1",
+  "main": "dist/xhr-listener.min.js",
+  "description": "This is a listener for XHR requests.",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/douglashipolito/xhr-listener.git"
+  },
+  "keywords": [],
+  "author": "Douglas Hipolito",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "dependencies": {},
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-contrib-jshint": "~0.6.4",
+    "grunt-contrib-uglify": "~0.2.4",
+    "grunt-contrib-watch": "~0.5.3",
+    "grunt-karma": "^0.8.3",
+    "karma": "^0.12.16",
+    "karma-chrome-launcher": "^0.1.4",
+    "karma-jasmine": "^0.2.2",
+    "karma-mocha-reporter": "^0.2.7",
+    "karma-phantomjs-launcher": "^0.1.4",
+    "karma-sauce-launcher": "^0.2.9"
+  }
+}

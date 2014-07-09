@@ -1,0 +1,21 @@
+{
+    "node": true,
+    "camelcase": true,
+    "curly": true,
+    "immed": true,
+    "latedef": true,
+    "newcap": true,
+    "noarg": true,
+    "undef": true,
+    "unused": true,
+    "strict": true,
+    "validthis": true,
+    "trailing": true,
+    "smarttabs": true,
+    "globals": {
+      "window": true,
+      "console": true,
+      "module": true,
+      "document": true
+    }
+}
