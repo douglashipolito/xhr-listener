@@ -65,7 +65,7 @@ XhrListener.prototype = {
  * @param {String} [callback] - OnOpen Callback to that path
  */
   onopen: function (path, callback) {
-    addRequest.call(this, 'onopen', path, callback);
+    return addRequest.call(this, 'onopen', path, callback);
   },
 
 /**
@@ -78,7 +78,7 @@ XhrListener.prototype = {
  * @param {String} [callback] - Done Callback to that path
  */
   done: function (path, callback) {
-    addRequest.call(this, 'done', path, callback);
+    return addRequest.call(this, 'done', path, callback);
   },
 
 /**
@@ -91,7 +91,35 @@ XhrListener.prototype = {
  * @param {String} [callback] - Done Callback to that path
  */
   error: function (path, callback) {
-    addRequest.call(this, 'error', path, callback);
+    return addRequest.call(this, 'error', path, callback);
+  },
+
+/**
+ * @public
+ *
+ * @description
+ * Call the done or error callback before the original handler
+ *
+ */
+  before: function () {
+    if(requests[this.path]) {
+      requests[this.path].before = true;
+    }
+    return this;
+  },
+
+/**
+ * @public
+ *
+ * @description
+ * Call the done or error callback after the original handler
+ *
+ */
+  after: function () {
+    if(requests[this.path]) {
+      requests[this.path].after = true;
+    }
+    return this;
   }
 };
 
@@ -164,6 +192,8 @@ function addRequest() {
 
   //Attaches this object to the requests object
   requests[path] = objectRequest[path];
+
+  return this;
 }
 
 /**
@@ -213,11 +243,29 @@ XHR.proto.open = function (method, url) {
 
   //On ready state change handler
   _xhr.onreadystatechange = function () {
-    readyStateChangeHandler.apply(this, arguments);
+    var stateChangeContext = this,
+        args = arguments;
+
+    //Loop through each request found, and call the handler
+    eachRequestFound(function(path, request) {
+
+      //Call readyState handler before original onreadystatechange
+      //By default the handler will be called before original handler
+      if(request.before || !request.after) {
+        readyStateChangeHandler.apply(stateChangeContext, args);
+      }
+    }, url);
 
     //If the user has changed the onreadystatechange, call it
     if(originalHandlers.onreadystatechange) {
-      originalHandlers.onreadystatechange.apply(this, arguments);
+      originalHandlers.onreadystatechange.apply(stateChangeContext, arguments);
+
+      //Loop through each request found, and call handler
+      eachRequestFound(function(path, request) {
+        if(request.after) {
+          readyStateChangeHandler.apply(stateChangeContext, args);
+        }
+      }, url);
     }
   };
 
@@ -226,7 +274,7 @@ XHR.proto.open = function (method, url) {
     originalHandlers.onreadystatechange = fn;
   });
 
-  //Through each request found, call the onopen callback if it exists
+  //Loop through each request found, call the onopen callback if it exists
   eachRequestFound(function(path, request) {
     if(request.onopen) {
       request.onopen.forEach(function (onopen) {
@@ -266,16 +314,20 @@ XHR.proto.send = function (params) {
  */
 function onloadHandler() {
   var ready = this,
-      args = arguments;
+      args = arguments,
+      successStatus = ready.status >= 200 && ready.status < 300 || ready.status === 304;
 
   eachRequestFound(function(path, request) {
 
     //The request is ok and there is an done callback
-    if(request.done && ready.status === 200) {
+    if(request.done && successStatus) {
       var type = getType(ready.getResponseHeader('Content-Type'));
 
       //Defines a object containing the type of this request
       ready.is = isType(type);
+
+      //Defines the support of response overwrite
+      ready.responseOverwrite = canIRewriteResponse.call(ready);
 
       //Calls each on 'done' callback
       //This loop is necessary because we can define more than one
@@ -283,6 +335,11 @@ function onloadHandler() {
       //path '/.*/' for every request
       request.done.forEach(function (done) {
         done.call(ready, ready.responseText, ready.response, type);
+
+        //If the response can't be overwritten
+        if(!ready.responseOverwrite) {
+          return;
+        }
 
         //Sets a new responseText if it exists
         if(ready.newResponseText) {
@@ -298,7 +355,7 @@ function onloadHandler() {
 
     //There are errors and ready.status is different than 200,
     //call error callback
-    else if(request.error && ready.status !== 200) {
+    else if(request.error && !successStatus) {
       request.error.forEach(function (error) {
         error.call(ready, ready.status, ready.statusText);
       });
@@ -407,6 +464,25 @@ function getArguments(args) {
  * @private
  *
  * @description
+ * Check if the the response might be overwritten
+ *
+ * @return {Boolean} returns true whether response's overwriting is supported
+ */
+function canIRewriteResponse() {
+  try {
+    Object.defineProperty(this, 'responseText', {
+      configurable: true
+    });
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
+/**
+ * @private
+ *
+ * @description
  * Allows to replace the 'response' property for a new value
  *
  * @param {String} responseType - The type of response, it should be 'responseText' or 'response'
@@ -417,20 +493,24 @@ function defineNewResponse(responseType) {
       newProperty = 'new' + property[0].toUpperCase() + property.slice(1),
       val = this[property];
 
-  Object.defineProperty(this, property, {
-    get: function() {
-      return val;
-    },
+  try {
+    Object.defineProperty(this, property, {
+      get: function() {
+        return val;
+      },
 
-    set: function() {
-      val = this[newProperty];
-      return val;
-    },
+      set: function() {
+        val = this[newProperty];
+        return val;
+      },
 
-    configurable: true
-  });
+      configurable: true
+    });
 
-  this[property] = this[newProperty];
+    this[property] = this[newProperty];
+  } catch(e) {
+    return false;
+  }
 }
 
 /**
