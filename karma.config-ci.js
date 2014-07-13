@@ -96,7 +96,7 @@ module.exports = function(config) {
       }
     ],
 
-    reporters: ['dots', 'saucelabs'],
+    reporters: ['mocha', 'saucelabs'],
     port: 9876,
 
     sauceLabs: {
