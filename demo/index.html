@@ -27,21 +27,6 @@
     <script>
       /* begin demo script */
 
-      var listener = XhrListener(/test\.json/);
-
-      listener.done(function () {
-        var json = {};
-
-        console.log(1);
-
-        if(this.is.json) {
-          json = JSON.parse(this.responseText);
-        }
-
-        json.test = 2;
-        this.newResponseText = JSON.stringify(json);
-      });
-
       function makeXHRRequest(method, file, callback) {
         method = method || 'get';
 
@@ -52,8 +37,9 @@
         }
 
         var xhr = new XMLHttpRequest();
+
         xhr.onreadystatechange = reqListener;
-        xhr.open(method, 'data/' + file, true);
+        xhr.open(method, '../data/' + file, true);
         xhr.send();
       }
 
@@ -63,10 +49,14 @@
         console.log(data.test);
       });*/
 
-      makeXHRRequest('get', 'test.json', function () {
-        console.log('test');
-      });
+      XhrListener(/test\.json/)
+        .done(function () {
+          console.log('done');
+        }).after()
 
+      makeXHRRequest('get', 'test.json', function () {
+        console.log('original');
+      });
       /* end demo script */
     </script>
   </body>
