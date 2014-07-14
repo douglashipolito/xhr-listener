@@ -96,8 +96,12 @@ module.exports = function(config) {
       }
     ],
 
-    reporters: ['mocha', 'saucelabs'],
+    reporters: ['dots', 'html', 'saucelabs'],
     port: 9876,
+
+    htmlReporter: {
+      outputDir: 'test/html/ci'
+    },
 
     sauceLabs: {
       testName: 'XHR Listener - Continuous integration test',
