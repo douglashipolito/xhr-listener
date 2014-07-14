@@ -98,29 +98,19 @@ XhrListener.prototype = {
  * @public
  *
  * @description
- * Call the done or error callback before the original handler
+ * Call the callback before the original handler
  *
  */
-  before: function () {
-    if(requests[this.path]) {
-      requests[this.path].before = true;
-    }
-    return this;
-  },
+  before: function () { },
 
 /**
  * @public
  *
  * @description
- * Call the done or error callback after the original handler
+ * Call the callback after the original handler
  *
  */
-  after: function () {
-    if(requests[this.path]) {
-      requests[this.path].after = true;
-    }
-    return this;
-  }
+  after: function () { }
 };
 
 /**
@@ -133,6 +123,17 @@ XhrListener.prototype = {
  */
 XhrListener.getRequestsList = function () {
   return requests;
+};
+
+/**
+ * @public
+ *
+ * @description
+ * Clear all tracked requests
+ *
+ */
+XhrListener.clearRequestsList = function () {
+  requests = {};
 };
 
 /**
@@ -149,7 +150,8 @@ XhrListener.getRequestsList = function () {
  *
  */
 function addRequest() {
-  var args = getArguments(arguments),
+  var instance = this,
+      args = getArguments(arguments),
       type = args[0],
       path = args[1],
       callback = args[2],
@@ -184,6 +186,9 @@ function addRequest() {
     return false;
   }
 
+  //Order of order to call this callback, after or before original handler
+  callback.callOrder = 'before';
+
   //Creates a new object request
   objectRequest[path] = requests[path] || {};
   objectRequest[path].path = path;
@@ -193,7 +198,24 @@ function addRequest() {
   //Attaches this object to the requests object
   requests[path] = objectRequest[path];
 
-  return this;
+  //Define the methods before and after
+  function MainRequestObject() {
+    instance.before = this.before = function() {
+      callback.callOrder = 'before';
+      return this;
+    };
+
+    instance.after = this.after = function() {
+      callback.callOrder = 'after';
+      return this;
+    };
+  }
+
+  //Attaches the current instance to the prototype of
+  //the main request object
+  MainRequestObject.prototype = instance;
+
+  return new MainRequestObject();
 }
 
 /**
@@ -244,29 +266,19 @@ XHR.proto.open = function (method, url) {
   //On ready state change handler
   _xhr.onreadystatechange = function () {
     var stateChangeContext = this,
-        args = arguments;
+        args = arguments,
 
-    //Loop through each request found, and call the handler
-    eachRequestFound(function(path, request) {
+        callback = function (request) {
+          readyStateChangeHandler.call(stateChangeContext, request);
+        },
 
-      //Call readyState handler before original onreadystatechange
-      //By default the handler will be called before original handler
-      if(request.before || !request.after) {
-        readyStateChangeHandler.apply(stateChangeContext, args);
-      }
-    }, url);
+        originalHandler = function () {
+          if(originalHandlers.onreadystatechange) {
+            originalHandlers.onreadystatechange.apply(stateChangeContext, args);
+          }
+        };
 
-    //If the user has changed the onreadystatechange, call it
-    if(originalHandlers.onreadystatechange) {
-      originalHandlers.onreadystatechange.apply(stateChangeContext, arguments);
-
-      //Loop through each request found, and call handler
-      eachRequestFound(function(path, request) {
-        if(request.after) {
-          readyStateChangeHandler.apply(stateChangeContext, args);
-        }
-      }, url);
-    }
+    callHandler(['done', 'error'], callback, originalHandler, url);
   };
 
   //Observes the changes on onreadystatechange
@@ -275,15 +287,18 @@ XHR.proto.open = function (method, url) {
   });
 
   //Loop through each request found, call the onopen callback if it exists
-  eachRequestFound(function(path, request) {
-    if(request.onopen) {
-      request.onopen.forEach(function (onopen) {
-        onopen.apply(_xhr, args);
-      });
-    }
-  }, url);
+  return callHandler(['onopen'],
 
-  return XHR.open.apply(this, arguments);
+    //Callback
+    function (request, openCallback) {
+      openCallback.apply(_xhr, args);
+    },
+
+    //Original handler
+    function () {
+      return XHR.open.apply(_xhr, args);
+
+    }, url);
 };
 
 /**
@@ -309,58 +324,118 @@ XHR.proto.send = function (params) {
  * @private
  *
  * @description
- * Handler to onload request
+ * Call handler in a properly order
  *
  */
-function onloadHandler() {
-  var ready = this,
-      args = arguments,
-      successStatus = ready.status >= 200 && ready.status < 300 || ready.status === 304;
+function callHandler(handlers, callback, originalCallback, url) {
+  var types = this,
+      returnOriginal = false,
+      callbackCreate = function (callback, request, requestsCallbacks) {
+        return function() {
+          callback(request, requestsCallbacks);
+        };
+      },
+
+      callBefore = [],
+      callAfter = [];
 
   eachRequestFound(function(path, request) {
+    var requestType,
+        index = 0,
+        requestsCallbacks = [],
+        requestsLength = 0;
 
-    //The request is ok and there is an done callback
-    if(request.done && successStatus) {
-      var type = getType(ready.getResponseHeader('Content-Type'));
+    for(requestType in request) {
 
-      //Defines a object containing the type of this request
-      ready.is = isType(type);
+      if(Object.prototype.toString.call(request[requestType]) !== '[object Array]') {
+        continue;
+      }
 
-      //Defines the support of response overwrite
-      ready.responseOverwrite = canIRewriteResponse.call(ready);
+      if(!~handlers.indexOf(requestType)) {
+        continue;
+      }
 
-      //Calls each on 'done' callback
-      //This loop is necessary because we can define more than one
-      //callback for the same path, like using a global
-      //path '/.*/' for every request
-      request.done.forEach(function (done) {
-        done.call(ready, ready.responseText, ready.response, type);
+      requestsCallbacks = request[requestType];
+      requestsLength = requestsCallbacks.length;
 
-        //If the response can't be overwritten
-        if(!ready.responseOverwrite) {
+      for(; index < requestsLength; index++) {
+        if(requestsCallbacks[index].callOrder === 'before') {
+          callBefore.push(callbackCreate(callback, request, requestsCallbacks[index]));
           return;
         }
 
-        //Sets a new responseText if it exists
-        if(ready.newResponseText) {
-          defineNewResponse.call(ready, 'responseText');
+        if(requestsCallbacks[index].callOrder === 'after') {
+          callAfter.push(callbackCreate(callback, request, requestsCallbacks[index]));
         }
-
-        //Sets a new response if it exists
-        if(ready.newResponse) {
-          defineNewResponse.call(ready, 'response');
-        }
-      });
+      }
     }
+  }, url);
 
-    //There are errors and ready.status is different than 200,
-    //call error callback
-    else if(request.error && !successStatus) {
-      request.error.forEach(function (error) {
-        error.call(ready, ready.status, ready.statusText);
-      });
-    }
-  }, ready.url);
+  callBefore.forEach(function (callback) {
+    callback();
+  });
+
+  returnOriginal = originalCallback();
+
+  callAfter.forEach(function (callback) {
+    callback();
+  });
+
+  return returnOriginal;
+}
+
+/**
+ * @private
+ *
+ * @description
+ * Handler to onload request
+ *
+ */
+function onloadHandler(request) {
+  var ready = this,
+      successStatus = ready.status >= 200 && ready.status < 300 || ready.status === 304;
+
+  //The request is ok and there is an done callback
+  if(request.done && successStatus) {
+    var type = getType(ready.getResponseHeader('Content-Type'));
+
+    //Defines a object containing the type of this request
+    ready.is = isType(type);
+
+    //Defines the support of response overwrite
+    ready.responseOverwritable = canIRewriteResponse.call(ready);
+
+    //Calls each on 'done' callback
+    //This loop is necessary because we can define more than one
+    //callback for the same path, like using a global
+    //path '/.*/' for every request
+    request.done.forEach(function (done) {
+      done.call(ready, ready.responseText, ready.response, type);
+
+      //If the response can't be overwritten
+      if(!ready.responseOverwritable) {
+        return;
+      }
+
+      //Sets a new responseText if it exists
+      if(ready.newResponseText) {
+        defineNewResponse.call(ready, 'responseText');
+      }
+
+      //Sets a new response if it exists
+      if(ready.newResponse) {
+        defineNewResponse.call(ready, 'response');
+      }
+    });
+  }
+
+  //There are errors and ready.status is different than 200,
+  //call error callback
+  else if(request.error && !successStatus) {
+    request.error.forEach(function (error) {
+      error.call(ready, ready.status, ready.statusText);
+    });
+  }
 }
 
 /**
@@ -370,11 +445,11 @@ function onloadHandler() {
  * Handler to ready state change
  *
  */
-function readyStateChangeHandler() {
+function readyStateChangeHandler(request) {
   var ready = this;
 
   if(ready.readyState === 4) {
-    onloadHandler.apply(ready, arguments);
+    onloadHandler.call(ready, request);
   }
 }
 
@@ -539,8 +614,7 @@ function observePropertyChange(property, callback) {
         return val;
       },
 
-      configurable: true,
-      writable: true
+      configurable: true
     });
   } catch (e) {
     return false;
