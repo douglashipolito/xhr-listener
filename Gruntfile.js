@@ -61,8 +61,15 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-karma');
 
+  //Tests tasks
   grunt.registerTask('test', ['jshint', 'karma:unit']);
   grunt.registerTask('test-ci', ['jshint', 'karma:continuous']);
-  grunt.registerTask('default', ['concat', 'jshint', 'karma:unit', 'uglify']);
+
+  //Build tasks
+  grunt.registerTask('build-dev', ['concat', 'test', 'uglify']);
+  grunt.registerTask('build-prod', ['concat', 'test-ci', 'uglify']);
+
+  //Default
+  grunt.registerTask('default', ['build-dev']);
 
 };
