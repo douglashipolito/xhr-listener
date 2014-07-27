@@ -53,9 +53,7 @@ module.exports = function(grunt) {
         },
 
         files: {
-            'src/polyfills.js': [
-            'src/main.js'
-          ]
+          'src/polyfills.js': ['src/main.js']
         }
       }
     },
@@ -81,14 +79,16 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-karma');
   grunt.loadNpmTasks('grunt-autopolyfiller');
 
+  //Compile
+  grunt.registerTask('compile', ['autopolyfiller', 'concat', 'jshint']);
+
   //Tests tasks
-  grunt.registerTask('test', ['jshint', 'karma:unit']);
-  grunt.registerTask('test-ci', ['jshint', 'karma:continuous']);
+  grunt.registerTask('test', ['compile', 'karma:unit']);
+  grunt.registerTask('test-ci', ['compile', 'karma:continuous']);
 
   //Build tasks
-  grunt.registerTask('compile', ['autopolyfiller', 'concat', 'jshint']);
-  grunt.registerTask('build-dev', ['compile', 'test', 'uglify']);
-  grunt.registerTask('build-prod', ['compile', 'test-ci', 'uglify']);
+  grunt.registerTask('build-dev', ['test', 'uglify']);
+  grunt.registerTask('build-prod', ['test-ci', 'uglify']);
 
   //Default
   grunt.registerTask('default', ['build-dev']);
