@@ -110,7 +110,18 @@ XhrListener.prototype = {
  * Call the callback after the original handler
  *
  */
-  after: function () { }
+  after: function () { },
+
+/**
+ * @public
+ *
+ * @description
+ * Attaches the params to post requests
+ *
+ * @param {String} params - Params of post
+ *
+ */
+  data: function (params) { }
 };
 
 /**
@@ -198,7 +209,7 @@ function addRequest() {
   //Attaches this object to the requests object
   requests[path] = objectRequest[path];
 
-  //Define the methods before and after
+  //Define the methods before, after, and data
   function MainRequestObject() {
     instance.before = this.before = function() {
       callback.callOrder = 'before';
@@ -207,6 +218,17 @@ function addRequest() {
 
     instance.after = this.after = function() {
       callback.callOrder = 'after';
+      return this;
+    };
+
+    instance.data = this.data = function(data) {
+      var k;
+
+      for(k in data) {
+        data[k] = data[k].toString();
+      }
+
+      objectRequest[path].data = data;
       return this;
     };
   }
@@ -231,60 +253,13 @@ function addRequest() {
  */
 XHR.proto.open = function (method, url) {
   var _xhr = this, //Save a reference to xhr
-      args = arguments, //All arguments
-
-      //The original handlers, it means the callback of
-      //xhr.onload or xhr.onreadystatechange
-      //that the user has defined
-      originalHandlers = {
-        onreadystatechange: false
-      };
+      args = arguments;
 
   //Saves a reference to url
   _xhr.url = url;
 
-  //If this request doesn't have this url
-  //Don't do anything with this request
-  if(!requestFound(_xhr.url)) {
-    return XHR.open.apply(this, arguments);
-  }
-
-  //Gets url params
-  _xhr.params =  {
-    get: getUrlParams(url),
-    post: {}
-  };
-
   //The xhr method
   _xhr.method = method.toLowerCase();
-
-  //The handler onreadystatechange has already been defined
-  if(_xhr.onreadystatechange) {
-    originalHandlers.onreadystatechange = _xhr.onreadystatechange;
-  }
-
-  //On ready state change handler
-  _xhr.onreadystatechange = function () {
-    var stateChangeContext = this,
-        args = arguments,
-
-        callback = function (request) {
-          readyStateChangeHandler.call(stateChangeContext, request);
-        },
-
-        originalHandler = function () {
-          if(originalHandlers.onreadystatechange) {
-            originalHandlers.onreadystatechange.apply(stateChangeContext, args);
-          }
-        };
-
-    callHandler(['done', 'error'], callback, originalHandler, url);
-  };
-
-  //Observes the changes on onreadystatechange
-  observePropertyChange.call(_xhr, 'onreadystatechange', function (fn) {
-    originalHandlers.onreadystatechange = fn;
-  });
 
   //Loop through each request found, call the onopen callback if it exists
   return callHandler(['onopen'],
@@ -310,13 +285,66 @@ XHR.proto.open = function (method, url) {
  * @return {Object} - An xhr send instance
  */
 XHR.proto.send = function (params) {
-  var _xhr = this;
+  var _xhr = this,
+      args = arguments, //All arguments
 
-  if(!requestFound(_xhr.url)) {
+      //The original handlers, it means the callback of
+      //xhr.onload or xhr.onreadystatechange
+      //that the user has defined
+      originalHandlers = {
+        onreadystatechange: false
+      },
+
+      url = _xhr.url;
+
+  //Gets url params
+  _xhr.params =  {
+    get: getUrlParams(url),
+    post: {}
+  };
+
+  _xhr.params.post = params ? getUrlParams('?' + params) : '';
+
+  if(!requestFound(_xhr.url, _xhr.params.post)) {
     return XHR.send.apply(_xhr, arguments);
   }
 
-  _xhr.params.post = params ? getUrlParams(params) : '';
+  //The handler onreadystatechange has already been defined
+  if(_xhr.onreadystatechange) {
+    originalHandlers.onreadystatechange = _xhr.onreadystatechange;
+  }
+
+  _xhr.waitRequestDone = function (callback) {
+    _xhr.__waitRequestDoneCallback = callback;
+  };
+
+  //On ready state change handler
+  _xhr.onreadystatechange = function () {
+    var stateChangeContext = this,
+        args = arguments,
+
+        callback = function (request) {
+          readyStateChangeHandler.call(stateChangeContext, request);
+        },
+
+        originalHandler = function () {
+          if(originalHandlers.onreadystatechange) {
+            originalHandlers.onreadystatechange.apply(stateChangeContext, args);
+
+            if(stateChangeContext.readyState === 4 && _xhr.__waitRequestDoneCallback) {
+              _xhr.__waitRequestDoneCallback.apply(stateChangeContext, args);
+            }
+          }
+        };
+
+    callHandler(['done', 'error'], callback, originalHandler, url);
+  };
+
+  //Observes the changes on onreadystatechange
+  observePropertyChange.call(_xhr, 'onreadystatechange', function (fn) {
+    originalHandlers.onreadystatechange = fn;
+  });
+
   return XHR.send.apply(_xhr, arguments);
 };
 
@@ -462,8 +490,8 @@ function readyStateChangeHandler(request) {
  * @param {String} url - url to test
  *
  */
-function requestFound(url) {
-  return eachRequestFound(false, url);
+function requestFound(url, params) {
+  return eachRequestFound(false, url, params);
 }
 
 /**
@@ -475,16 +503,21 @@ function requestFound(url) {
  * @param {Function} callback - Callback to request found
  * @param {String} url - Url that needs to be compared with tracked urls
  */
-function eachRequestFound(callback, url) {
+function eachRequestFound(callback, url, params) {
   var found = false;
 
   eachRequest(function(request) {
     if(matchPath(request.path, url)) {
-      if(callback) {
-        callback(request.path, request);
+
+      if(params && request.data) {
+        found = JSON.stringify(request.data) === JSON.stringify(params);
+      } else {
+        found = true;
       }
 
-      found = true;
+      if(callback && found) {
+        callback(request.path, request);
+      }
     }
   });
 
