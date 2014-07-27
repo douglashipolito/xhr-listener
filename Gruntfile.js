@@ -4,6 +4,37 @@ module.exports = function(grunt) {
 
     pkg: grunt.file.readJSON('package.json'),
 
+    connect: {
+      server: {
+        options: {
+          hostname: '127.0.0.1',
+          port: 9001,
+          base: '.',
+          middleware: function (connect, options, middlewares) {
+            middlewares.unshift(function(req, res, next) {
+              if(req.method === 'POST') {
+
+                if(req.url === '/data/post_test') {
+                  res.writeHead(200, { 'Content-Type': 'application/json' });
+                  res.end(grunt.file.read('data/test.json'));
+                } else {
+                  return next();
+                }
+
+              } else if(req.url === '/data/error_test') {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end();
+              } else {
+                return next();
+              }
+            });
+
+            return middlewares;
+          }
+        }
+      }
+    },
+
     concat: {
       options: {
         separator: "\n\n"
@@ -30,14 +61,21 @@ module.exports = function(grunt) {
       }
     },
 
-    karma: {
-      continuous: {
-        configFile: 'karma.config-ci.js',
-        singleRun: true
+    jasmine: {
+      unit: {
+        src: 'dist/xhr-listener.js',
+        options: {
+          specs: 'test/spec/*.js',
+          host: 'http://127.0.0.1:9001'
+        }
       },
 
-      unit: {
-        configFile: 'karma.conf.js',
+      continuous: {
+        src: 'dist/xhr-listener.js',
+        options: {
+          specs: 'test/spec/*.js',
+          host: 'http://127.0.0.1:9001'
+        }
       }
     },
 
@@ -58,6 +96,15 @@ module.exports = function(grunt) {
       }
     },
 
+    jsdoc : {
+        dist : {
+            src: ['src/main.js', 'test/*.js'],
+            options: {
+                destination: 'docs'
+            }
+        }
+    },
+
     jshint: {
       files: ['dist/xhr-listener.js'],
       options: {
@@ -67,7 +114,7 @@ module.exports = function(grunt) {
 
     watch: {
       files: ['Gruntfile.js', '<%= concat.dist.src %>', 'test/**/*.js'],
-      tasks: ['concat', 'jshint', 'karma:unit']
+      tasks: ['concat', 'jshint', 'jasmine']
     }
 
   });
@@ -76,18 +123,23 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-concat');
-  grunt.loadNpmTasks('grunt-karma');
+  grunt.loadNpmTasks('grunt-contrib-jasmine');
+  grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-autopolyfiller');
+  grunt.loadNpmTasks('grunt-jsdoc');
+
+  //Generate doc
+  grunt.registerTask('docs', ['jsdoc']);
 
   //Compile
   grunt.registerTask('compile', ['autopolyfiller', 'concat', 'jshint']);
 
   //Tests tasks
-  grunt.registerTask('test', ['compile', 'karma:unit']);
-  grunt.registerTask('test-ci', ['compile', 'karma:continuous']);
+  grunt.registerTask('test', ['compile', 'connect', 'jasmine:unit']);
+  grunt.registerTask('test-ci', ['compile', 'connect', 'jasmine:continuous']);
 
   //Build tasks
-  grunt.registerTask('build-dev', ['test', 'uglify']);
+  grunt.registerTask('build-dev', ['test', 'uglify', 'docs']);
   grunt.registerTask('build-prod', ['test-ci', 'uglify']);
 
   //Default
