@@ -10,8 +10,8 @@ module.exports = function(grunt) {
       },
       dist: {
         src: [
-          'src/polyfills.js',
           'src/intro.js',
+          'src/polyfills.js',
           'src/main.js',
           'src/outro.js'
         ],
@@ -86,9 +86,9 @@ module.exports = function(grunt) {
   grunt.registerTask('test-ci', ['jshint', 'karma:continuous']);
 
   //Build tasks
-  grunt.registerTask('compile', ['autopolyfiller', 'concat', 'uglify']);
-  grunt.registerTask('build-dev', ['autopolyfiller', 'concat', 'test', 'uglify']);
-  grunt.registerTask('build-prod', ['autopolyfiller', 'concat', 'test-ci', 'uglify']);
+  grunt.registerTask('compile', ['autopolyfiller', 'concat', 'jshint']);
+  grunt.registerTask('build-dev', ['compile', 'test', 'uglify']);
+  grunt.registerTask('build-prod', ['compile', 'test-ci', 'uglify']);
 
   //Default
   grunt.registerTask('default', ['build-dev']);

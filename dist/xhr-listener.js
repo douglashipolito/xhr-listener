@@ -1,3 +1,13 @@
+/*
+ *
+ * XHR Listener Lib
+ *
+ */
+(function(global, undefined) {
+
+  "use strict";
+
+
 if (!Array.prototype.forEach) {
 // Array.prototype.forEach
 Array.prototype.forEach = function forEach(callback, scope) {
@@ -50,16 +60,6 @@ Object.defineProperties = function defineProperties(object, descriptors) {
 };
 
 }
-
-
-/*
- *
- * XHR Listener Lib
- *
- */
-(function(global, undefined) {
-
-  "use strict";
 
 
 var XHR = (function(){
@@ -185,6 +185,7 @@ XhrListener.prototype = {
  * @param {String} params - Params of post
  *
  */
+ /*jshint unused:false*/
   data: function (params) { }
 };
 

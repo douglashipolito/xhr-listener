@@ -121,6 +121,7 @@ XhrListener.prototype = {
  * @param {String} params - Params of post
  *
  */
+ /*jshint unused:false*/
   data: function (params) { }
 };
 
