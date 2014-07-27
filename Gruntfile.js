@@ -41,6 +41,25 @@ module.exports = function(grunt) {
       }
     },
 
+    autopolyfiller: {
+      custom_browsers: {
+        options: {
+          browsers: [
+            'last 2 version',
+            '> 1%',
+            'ie 8',
+            'ie 9'
+          ]
+        },
+
+        files: {
+            'src/polyfills.js': [
+            'src/main.js'
+          ]
+        }
+      }
+    },
+
     jshint: {
       files: ['dist/xhr-listener.js'],
       options: {
@@ -60,14 +79,16 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-karma');
+  grunt.loadNpmTasks('grunt-autopolyfiller');
 
   //Tests tasks
   grunt.registerTask('test', ['jshint', 'karma:unit']);
   grunt.registerTask('test-ci', ['jshint', 'karma:continuous']);
 
   //Build tasks
-  grunt.registerTask('build-dev', ['concat', 'test', 'uglify']);
-  grunt.registerTask('build-prod', ['concat', 'test-ci', 'uglify']);
+  grunt.registerTask('compile', ['autopolyfiller', 'concat', 'uglify']);
+  grunt.registerTask('build-dev', ['autopolyfiller', 'concat', 'test', 'uglify']);
+  grunt.registerTask('build-prod', ['autopolyfiller', 'concat', 'test-ci', 'uglify']);
 
   //Default
   grunt.registerTask('default', ['build-dev']);
