@@ -51,12 +51,13 @@
 
       XhrListener(/test\.json/)
         .done(function () {
-          console.log('done');
-        }).after()
+          console.log(this);
+        });
 
       makeXHRRequest('get', 'test.json', function () {
         console.log('original');
       });
+
       /* end demo script */
     </script>
   </body>
