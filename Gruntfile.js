@@ -38,6 +38,7 @@ module.exports = function(grunt) {
 
       unit: {
         configFile: 'karma.conf.js',
+        browsers: ['PhantomJS'],
         singleRun: true
       },
 
@@ -103,7 +104,16 @@ module.exports = function(grunt) {
   grunt.registerTask('compile', ['autopolyfiller', 'concat', 'jshint']);
 
   //Tests tasks
-  grunt.registerTask('test', ['compile', 'karma:unit']);
+  var testSubTasks = ['compile'];
+
+  if(typeof process.env.SAUCE_USERNAME  !== 'undefined'
+  && typeof process.env.SAUCE_ACCESS_KEY !== 'undefined') {
+    testSubTasks.push('karma:continuos');
+  } else {
+    testSubTasks.push('karma:unit');
+  }
+
+  grunt.registerTask('test', testSubTasks);
   grunt.registerTask('test-dev', ['compile', 'karma:dev']);
   grunt.registerTask('test-ci', ['compile', 'karma:continuous']);
 
