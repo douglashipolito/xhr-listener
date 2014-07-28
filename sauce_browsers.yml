@@ -69,7 +69,7 @@
   'ie.9': {
     base: 'SauceLabs',
     browserName: 'internet explorer',
-    platform: 'Windows 8',
+    platform: 'Windows 7',
     version: '9'
   },
   'ie.10': {
