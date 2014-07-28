@@ -108,7 +108,7 @@ module.exports = function(grunt) {
 
   if(typeof process.env.SAUCE_USERNAME  !== 'undefined'
   && typeof process.env.SAUCE_ACCESS_KEY !== 'undefined') {
-    testSubTasks.push('karma:continuos');
+    testSubTasks.push('karma:continuous');
   } else {
     testSubTasks.push('karma:unit');
   }
