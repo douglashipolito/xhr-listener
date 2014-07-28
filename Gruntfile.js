@@ -38,6 +38,12 @@ module.exports = function(grunt) {
 
       unit: {
         configFile: 'karma.conf.js',
+        singleRun: true
+      },
+
+      dev: {
+        configFile: 'karma.conf.js',
+        singleRun: false
       }
     },
 
@@ -98,10 +104,11 @@ module.exports = function(grunt) {
 
   //Tests tasks
   grunt.registerTask('test', ['compile', 'karma:unit']);
+  grunt.registerTask('test-dev', ['compile', 'karma:dev']);
   grunt.registerTask('test-ci', ['compile', 'karma:continuous']);
 
   //Build tasks
-  grunt.registerTask('build-dev', ['test', 'uglify', 'docs']);
+  grunt.registerTask('build-dev', ['test-dev', 'uglify', 'docs']);
   grunt.registerTask('build-prod', ['test-ci', 'uglify']);
 
   //Default

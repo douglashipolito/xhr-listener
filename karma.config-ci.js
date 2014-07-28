@@ -36,6 +36,7 @@ module.exports = function(config) {
     ],
 
     reporters: ['dots', 'saucelabs'],
+    transports: ['xhr-polling'],
     port: 9876,
 
     htmlReporter: {
@@ -53,7 +54,6 @@ module.exports = function(config) {
     browserNoActivityTimeout: 30000,
 
     customLaunchers: sauceBrowsers,
-    browsers: Object.keys(sauceBrowsers),
-    singleRun: true
+    browsers: Object.keys(sauceBrowsers)
   });
 };

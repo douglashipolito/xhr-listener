@@ -15,11 +15,13 @@
   "devDependencies": {
     "grunt": "~0.4.1",
     "grunt-autopolyfiller": "^1.1.0",
+    "grunt-cli": "^0.1.13",
     "grunt-contrib-concat": "~0.3.0",
     "grunt-contrib-connect": "^0.8.0",
     "grunt-contrib-jshint": "~0.6.4",
     "grunt-contrib-uglify": "~0.2.4",
     "grunt-contrib-watch": "~0.5.3",
+    "grunt-jsdoc": "^0.5.6",
     "grunt-karma": "^0.8.3",
     "karma": "^0.12.16",
     "karma-chrome-launcher": "^0.1.4",
@@ -28,10 +30,9 @@
     "karma-ie-launcher": "^0.1.5",
     "karma-jasmine": "^0.2.2",
     "karma-phantomjs-launcher": "^0.1.4",
-    "karma-sauce-launcher": "^0.2.9",
-    "grunt-jsdoc": "^0.5.6"
+    "karma-sauce-launcher": "^0.2.9"
   },
   "scripts": {
-    "test": "./node_modules/.bin/grunt test"
+    "test": "grunt test"
   }
 }

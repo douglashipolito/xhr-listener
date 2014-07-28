@@ -37,9 +37,7 @@ module.exports = function(config) {
       outputDir: 'test/html/dev'
     },
 
-    colors: true,
-
-    singleRun: false
+    colors: true
   });
 
 };
