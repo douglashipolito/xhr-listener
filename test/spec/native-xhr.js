@@ -3,7 +3,7 @@
 
 describe('XHRListener can listen without libraries', function () {
 
-  var baseDataUrl = '/data/',
+  var baseDataUrl = 'base/data/',
 
       makeXHRRequest = function (url, callbackDone, options) {
         var xhr = new XMLHttpRequest();
@@ -11,7 +11,7 @@ describe('XHRListener can listen without libraries', function () {
         options = options || {};
 
         xhr.onreadystatechange = function () {
-          if (this.readyState == this.DONE && callbackDone) {
+          if (this.readyState === 4 && callbackDone) {
             callbackDone.apply(this, arguments);
           }
         };
@@ -178,14 +178,14 @@ describe('XHRListener can listen without libraries', function () {
   });
 
   it('and is able to work with POST params', function (done) {
-    XhrListener(baseDataUrl + 'post_test')
+    XhrListener(baseDataUrl + 'test.json')
       .done(xhrListenerCall)
       .data({
         test: true,
         type: 'json'
       });
 
-    makeXHRRequest(baseDataUrl + 'post_test', function () {
+    makeXHRRequest(baseDataUrl + 'test.json', function () {
       expect(xhrListenerCall).toHaveBeenCalled();
       done();
     }, {

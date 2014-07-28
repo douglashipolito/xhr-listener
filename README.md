@@ -1,6 +1,8 @@
-# xhr-listener
+# XHR Listener
 
-This is a listener for XHR requests.
+[![Build Status](https://secure.travis-ci.org/douglashipolito/xhr-listener.svg?branch=master)](http://travis-ci.org/douglashipolito/xhr-listener)
+[![devDependency Status](https://david-dm.org/douglashipolito/xhr-listener/dev-status.svg)](https://david-dm.org/douglashipolito/xhr-listener#info=devDependencies)
+[![Selenium Test Status](https://saucelabs.com/browser-matrix/xhr-listener.svg)](https://saucelabs.com/u/xhr-listener)
 
 ## About
 

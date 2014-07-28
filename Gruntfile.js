@@ -4,37 +4,6 @@ module.exports = function(grunt) {
 
     pkg: grunt.file.readJSON('package.json'),
 
-    connect: {
-      server: {
-        options: {
-          hostname: '127.0.0.1',
-          port: 9001,
-          base: '.',
-          middleware: function (connect, options, middlewares) {
-            middlewares.unshift(function(req, res, next) {
-              if(req.method === 'POST') {
-
-                if(req.url === '/data/post_test') {
-                  res.writeHead(200, { 'Content-Type': 'application/json' });
-                  res.end(grunt.file.read('data/test.json'));
-                } else {
-                  return next();
-                }
-
-              } else if(req.url === '/data/error_test') {
-                res.writeHead(400, { 'Content-Type': 'application/json' });
-                res.end();
-              } else {
-                return next();
-              }
-            });
-
-            return middlewares;
-          }
-        }
-      }
-    },
-
     concat: {
       options: {
         separator: "\n\n"
@@ -61,21 +30,14 @@ module.exports = function(grunt) {
       }
     },
 
-    jasmine: {
-      unit: {
-        src: 'dist/xhr-listener.js',
-        options: {
-          specs: 'test/spec/*.js',
-          host: 'http://127.0.0.1:9001'
-        }
+    karma: {
+      continuous: {
+        configFile: 'karma.config-ci.js',
+        singleRun: true
       },
 
-      continuous: {
-        src: 'dist/xhr-listener.js',
-        options: {
-          specs: 'test/spec/*.js',
-          host: 'http://127.0.0.1:9001'
-        }
+      unit: {
+        configFile: 'karma.conf.js',
       }
     },
 
@@ -119,14 +81,14 @@ module.exports = function(grunt) {
 
   });
 
+  //Load tasks
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-concat');
-  grunt.loadNpmTasks('grunt-contrib-jasmine');
-  grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-autopolyfiller');
   grunt.loadNpmTasks('grunt-jsdoc');
+  grunt.loadNpmTasks('grunt-karma');
 
   //Generate doc
   grunt.registerTask('docs', ['jsdoc']);
@@ -135,8 +97,8 @@ module.exports = function(grunt) {
   grunt.registerTask('compile', ['autopolyfiller', 'concat', 'jshint']);
 
   //Tests tasks
-  grunt.registerTask('test', ['compile', 'connect', 'jasmine:unit']);
-  grunt.registerTask('test-ci', ['compile', 'connect', 'jasmine:continuous']);
+  grunt.registerTask('test', ['compile', 'karma:unit']);
+  grunt.registerTask('test-ci', ['compile', 'karma:continuous']);
 
   //Build tasks
   grunt.registerTask('build-dev', ['test', 'uglify', 'docs']);

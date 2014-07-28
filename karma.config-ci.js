@@ -35,7 +35,7 @@ module.exports = function(config) {
       }
     ],
 
-    reporters: ['dots', 'html', 'saucelabs'],
+    reporters: ['dots', 'saucelabs'],
     port: 9876,
 
     htmlReporter: {
@@ -44,10 +44,14 @@ module.exports = function(config) {
 
     sauceLabs: {
       testName: 'XHR Listener - Continuous integration test',
-      recordScreenshots: false
+      recordScreenshots: false,
+      startConnect: false
     },
 
     captureTimeout: 120000,
+    browserDisconnectTimeout: 10000,
+    browserNoActivityTimeout: 30000,
+
     customLaunchers: sauceBrowsers,
     browsers: Object.keys(sauceBrowsers),
     singleRun: true
