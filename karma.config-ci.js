@@ -36,7 +36,6 @@ module.exports = function(config) {
     ],
 
     reporters: ['dots', 'saucelabs'],
-    transports: ['xhr-polling'],
     port: 9876,
 
     htmlReporter: {
