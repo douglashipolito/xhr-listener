@@ -43,8 +43,9 @@ module.exports = function(config) {
     },
 
     sauceLabs: {
-      testName: 'XHR Listener - Continuous integration test',
-      recordScreenshots: false
+      testName: 'XHR Listener - tests',
+      recordScreenshots: false,
+      startConnect: false
     },
 
     captureTimeout: 120000,
