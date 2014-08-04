@@ -32,8 +32,8 @@ module.exports = function(grunt) {
 
     karma: {
 
-      sl_window_7_ie : { configFile : 'test/karma/saucelabs/windows.7.ie.js' },
-      sl_window_8_ie : { configFile : 'test/karma/saucelabs/windows.8.ie.js' },
+      sl_windows_7_ie : { configFile : 'test/karma/saucelabs/windows.7.ie.js' },
+      sl_windows_8_ie : { configFile : 'test/karma/saucelabs/windows.8.ie.js' },
       sl_firefox : { configFile : 'test/karma/saucelabs/firefox.js' },
       sl_safari : { configFile : 'test/karma/saucelabs/safari.js' },
       sl_ios : { configFile : 'test/karma/saucelabs/ios.js' },
@@ -108,8 +108,8 @@ module.exports = function(grunt) {
   grunt.registerTask('compile', ['autopolyfiller', 'concat', 'jshint']);
 
   grunt.registerTask('test-saucelabs', [
-    'karma:sl_window_7_ie',
-    'karma:sl_window_8_ie',
+    'karma:sl_windows_7_ie',
+    'karma:sl_windows_8_ie',
     'karma:sl_firefox',
     'karma:sl_safari',
     'karma:sl_chrome',
