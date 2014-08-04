@@ -1,29 +1,28 @@
 'use strict';
 
 module.exports = function(config) {
-  var grunt = require('grunt');
-
   if (!process.env.SAUCE_USERNAME || !process.env.SAUCE_ACCESS_KEY) {
     console.log('Make sure the SAUCE_USERNAME and SAUCE_ACCESS_KEY environment variables are set.');
     process.exit(1);
   }
 
+  //Set the karmaConfig
   config.set({
-    // base path that will be used to resolve all patterns (eg. files, exclude)
-    basePath: '',
+    //base path that will be used to resolve all patterns (eg. files, exclude)
+    basePath: '../../..',
 
-    // frameworks to use
+    //frameworks to use
     frameworks: ['jasmine'],
 
-    //Files
+    //files
     files: [
-      //Lib
+      //lib
       'dist/xhr-listener.js',
 
-      //Tests
+      //tests
       'test/spec/*.js',
 
-      //Data
+      //data
       {
         pattern:  'data/*',
         watched:  true,
@@ -44,9 +43,11 @@ module.exports = function(config) {
       recordScreenshots: false
     },
 
-    captureTimeout: 120000,
-    browserDisconnectTimeout: 10000,
-    browserNoActivityTimeout: 30000,
+    browserDisconnectTimeout : 10000,
+    //browserDisconnectTolerance : 1,
+    browserNoActivityTimeout : 4*60*1000,
+    captureTimeout : 4*60*1000,
+
     singleRun: true
   });
 };

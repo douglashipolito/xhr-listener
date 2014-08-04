@@ -31,10 +31,14 @@ module.exports = function(grunt) {
     },
 
     karma: {
-      continuous: {
-        configFile: 'karma.config-ci.js',
-        singleRun: true
-      },
+
+      sl_window_7_ie : { configFile : 'test/karma/saucelabs/windows.7.ie.js' },
+      sl_window_8_ie : { configFile : 'test/karma/saucelabs/windows.8.ie.js' },
+      sl_firefox : { configFile : 'test/karma/saucelabs/firefox.js' },
+      sl_safari : { configFile : 'test/karma/saucelabs/safari.js' },
+      sl_ios : { configFile : 'test/karma/saucelabs/ios.js' },
+      sl_android : { configFile : 'test/karma/saucelabs/android.js' },
+      sl_chrome: { configFile : 'test/karma/saucelabs/chrome.js' },
 
       unit: {
         configFile: 'karma.conf.js',
@@ -103,19 +107,29 @@ module.exports = function(grunt) {
   //Compile
   grunt.registerTask('compile', ['autopolyfiller', 'concat', 'jshint']);
 
+  grunt.registerTask('test-saucelabs', [
+    'karma:sl_window_7_ie',
+    'karma:sl_window_8_ie',
+    'karma:sl_firefox',
+    'karma:sl_safari',
+    'karma:sl_chrome',
+    'karma:sl_ios',
+    'karma:sl_android'
+  ]);
+
   //Tests tasks
   var testSubTasks = ['compile'];
 
   if(typeof process.env.SAUCE_USERNAME  !== 'undefined'
   && typeof process.env.SAUCE_ACCESS_KEY !== 'undefined') {
-    testSubTasks.push('karma:continuous');
+    testSubTasks.push('test-saucelabs');
   } else {
     testSubTasks.push('karma:unit');
   }
 
   grunt.registerTask('test', testSubTasks);
   grunt.registerTask('test-dev', ['compile', 'karma:dev']);
-  grunt.registerTask('test-ci', ['compile', 'karma:continuous']);
+  grunt.registerTask('test-ci', ['compile', 'test-saucelabs']);
 
   //Build tasks
   grunt.registerTask('build-dev', ['test-dev', 'uglify', 'docs']);
