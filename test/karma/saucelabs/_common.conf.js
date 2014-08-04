@@ -47,7 +47,7 @@ module.exports = function(config) {
     },
 
     browserDisconnectTimeout : 10000,
-    //browserDisconnectTolerance : 1,
+    browserDisconnectTolerance : 1,
     browserNoActivityTimeout : 4*60*1000,
     captureTimeout : 4*60*1000,
 
