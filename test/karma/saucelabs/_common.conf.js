@@ -40,7 +40,10 @@ module.exports = function(config) {
 
     sauceLabs: {
       testName: 'XHR Listener - tests',
-      recordScreenshots: false
+      recordScreenshots: false,
+      connectOptions: {
+        port: 5757
+      }
     },
 
     browserDisconnectTimeout : 10000,
